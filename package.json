@@ -1,0 +1,14 @@
+{
+  "name": "karte-app",
+  "version": "2.0.0",
+  "description": "塾チューター向け面談カルテ自動生成アプリ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.3.1"
+  }
+}

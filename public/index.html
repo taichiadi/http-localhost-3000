@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>面談カルテ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>面談カルテ</h1>
+
+    <div class="input-row">
+      <div class="input-group">
+        <label>生徒名</label>
+        <input type="text" id="studentName" placeholder="生徒の名前">
+      </div>
+      <div class="input-group">
+        <label>チューター名</label>
+        <input type="text" id="tutorName" placeholder="あなたの名前">
+      </div>
+    </div>
+
+    <!-- メイン録音エリア -->
+    <div class="record-area">
+      <button id="recordBtn" class="record-btn">
+        <span class="record-icon"></span>
+        <span id="recordLabel">面談を録音</span>
+      </button>
+      <div id="timer" class="timer">00:00</div>
+      <div id="status" class="status"></div>
+    </div>
+
+    <!-- リアルタイム書き起こし表示 -->
+    <div id="transcriptSection" class="transcript-section" style="display:none;">
+      <h2>書き起こし（リアルタイム）</h2>
+      <div id="transcript" class="text-box transcript-box"></div>
+    </div>
+
+    <!-- カルテ生成ボタン -->
+    <button id="generateBtn" class="generate-btn" style="display:none;">カルテを自動生成</button>
+
+    <!-- ローディング -->
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>AIがカルテを生成中...</p>
+    </div>
+
+    <!-- 生成結果 -->
+    <div id="karteSection" class="karte-section" style="display:none;">
+      <h2>生成カルテ</h2>
+      <div id="karte" class="text-box karte-box"></div>
+      <button id="copyBtn" class="copy-btn">カルテをコピー → スタプラへ</button>
+      <div id="copyMsg" class="copy-msg"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
