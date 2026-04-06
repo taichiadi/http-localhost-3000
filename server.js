@@ -6,6 +6,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '1mb' }));
 
+console.log('All env keys:', Object.keys(process.env).filter(k => k.includes('ANTHRO') || k.includes('anthro') || k.includes('API')));
 const apiKey = process.env.ANTHROPIC_API_KEY;
 console.log('API Key loaded:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT SET');
 const anthropic = new Anthropic({ apiKey });
