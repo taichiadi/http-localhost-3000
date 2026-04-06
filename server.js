@@ -6,7 +6,9 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '1mb' }));
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const apiKey = process.env.ANTHROPIC_API_KEY;
+console.log('API Key loaded:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT SET');
+const anthropic = new Anthropic({ apiKey });
 
 app.post('/api/generate-karte', async (req, res) => {
   const { transcript, studentName, tutorName } = req.body;
