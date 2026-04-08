@@ -169,6 +169,7 @@ generateBtn.addEventListener('click', async () => {
 
     const data = await res.json();
     karteEl.textContent = data.karte;
+    karteEl.contentEditable = 'true';
     karteSection.style.display = 'block';
     karteSection.scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
