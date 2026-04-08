@@ -16,7 +16,8 @@ const copyMsg = document.getElementById('copyMsg');
 let isRecording = false;
 let timerInterval = null;
 let seconds = 0;
-let fullTranscript = ''; // 確定済みテキスト
+let fullTranscript = '';     // 確定済みテキスト（前セッション分）
+let sessionFinalText = '';   // 現セッションの確定済みテキスト
 let recognition = null;
 
 // --- Web Speech API セットアップ ---
@@ -33,31 +34,31 @@ function createRecognition() {
   rec.continuous = true;
   rec.interimResults = true;
 
+  sessionFinalText = ''; // 新セッション開始時にリセット
+
   rec.onresult = (event) => {
-    let finalText = '';
+    sessionFinalText = '';
     let interimText = '';
 
     for (let i = 0; i < event.results.length; i++) {
       const result = event.results[i];
       if (result.isFinal) {
-        finalText += result[0].transcript;
+        sessionFinalText += result[0].transcript;
       } else {
         interimText += result[0].transcript;
       }
     }
 
-    // 表示を更新
-    const display = fullTranscript + finalText + (interimText ? '...' + interimText : '');
-    transcriptEl.textContent = display || '（音声を待っています...）';
-    // 自動スクロール
+    // 表示を更新（interimは薄く表示するため別処理）
+    transcriptEl.textContent = fullTranscript + sessionFinalText + interimText;
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
   };
 
   rec.onend = () => {
     if (!isRecording) return;
     // 確定テキストを保存して再開（Web Speech APIは途切れることがある）
-    const currentText = transcriptEl.textContent.replace(/\.\.\..*$/, ''); // interim部分を除去
-    fullTranscript = currentText;
+    fullTranscript += sessionFinalText;
+    sessionFinalText = '';
     try {
       recognition = createRecognition();
       recognition.start();
@@ -70,6 +71,8 @@ function createRecognition() {
     if (event.error === 'not-allowed') {
       statusEl.textContent = 'マイクへのアクセスを許可してください';
       stopRecording();
+    } else if (event.error === 'network') {
+      statusEl.textContent = '音声認識でネットワークエラーが発生しました';
     }
   };
 
@@ -88,11 +91,13 @@ recordBtn.addEventListener('click', () => {
 function startRecording() {
   isRecording = true;
   fullTranscript = '';
+  sessionFinalText = '';
   recordBtn.classList.add('recording');
   recordLabel.textContent = '録音停止';
   statusEl.textContent = '録音中 — 面談を進めてください';
   transcriptSection.style.display = 'block';
   transcriptEl.textContent = '（音声を待っています...）';
+  transcriptEl.contentEditable = 'false'; // 録音中は編集不可
   generateBtn.style.display = 'none';
   karteSection.style.display = 'none';
 
@@ -123,13 +128,15 @@ function stopRecording() {
     recognition = null;
   }
 
-  // 最終テキストを取得（interim部分を除去）
-  const text = transcriptEl.textContent.replace(/\.\.\..*$/, '').trim();
-  fullTranscript = text;
+  // 確定済みテキストを確定（DOMに依存せず変数から取得）
+  fullTranscript = fullTranscript + sessionFinalText;
+  sessionFinalText = '';
+  transcriptEl.textContent = fullTranscript;
 
-  if (text && text !== '（音声を待っています...）') {
+  if (fullTranscript && fullTranscript !== '（音声を待っています...）') {
+    transcriptEl.contentEditable = 'true'; // 録音後は編集可能に
     generateBtn.style.display = 'block';
-    statusEl.textContent = `書き起こし完了（${Math.floor(seconds / 60)}分${seconds % 60}秒）`;
+    statusEl.textContent = `書き起こし完了（${Math.floor(seconds / 60)}分${seconds % 60}秒）— 誤変換があれば上のテキストを直接修正できます`;
   } else {
     statusEl.textContent = '音声が認識されませんでした。もう一度お試しください。';
   }
@@ -140,6 +147,9 @@ generateBtn.addEventListener('click', async () => {
   const studentName = document.getElementById('studentName').value.trim();
   const tutorName = document.getElementById('tutorName').value.trim();
 
+  // 編集済みの書き起こしを使用
+  const transcript = transcriptEl.textContent.trim();
+
   generateBtn.disabled = true;
   generateBtn.textContent = '生成中...';
   loadingEl.style.display = 'block';
@@ -149,11 +159,7 @@ generateBtn.addEventListener('click', async () => {
     const res = await fetch('/api/generate-karte', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        transcript: fullTranscript,
-        studentName,
-        tutorName,
-      }),
+      body: JSON.stringify({ transcript, studentName, tutorName }),
     });
 
     if (!res.ok) {

@@ -145,6 +145,13 @@ h2 {
   color: #495057;
 }
 
+.transcript-box[contenteditable="true"] {
+  background: #fff;
+  border-color: #1971c2;
+  outline: none;
+  cursor: text;
+}
+
 .karte-box {
   background: #fff9db;
   border-color: #ffe066;
